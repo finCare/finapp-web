@@ -7,6 +7,8 @@ import {
   USER_LOADING
 } from "./types";
 // Register User
+
+axios.defaults.baseURL = 'http://13.126.252.76/';
 export const registerUser = (userData, history) => async (dispatch) => {
    await axios.post("service/authenticate/signup", userData).then(res => {
      if(res.status=="200")
@@ -19,6 +21,7 @@ export const registerUser = (userData, history) => async (dispatch) => {
        console.log("NOT OK")
      }
    }).catch(err =>
+
       dispatch({
         type: GET_ERRORS,
         payload: err.response.data
