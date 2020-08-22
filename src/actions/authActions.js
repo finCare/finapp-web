@@ -8,7 +8,7 @@ import {
 } from "./types";
 // Register User
 
-axios.defaults.baseURL = 'https://finapp-server.herokuapp.com/';
+axios.defaults.baseURL = 'http://13.127.246.172:80/';
 export const registerUser = (userData, history) => async (dispatch) => {
    await axios.post("service/authenticate/signup", userData).then(res => {
      if(res.status=="200")
