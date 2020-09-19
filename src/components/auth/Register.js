@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import { registerUser } from "../../actions/authActions";
 import classnames from "classnames";
+import validator from "validator"
 class Register extends Component {
   constructor() {
     super();
@@ -17,32 +18,76 @@ class Register extends Component {
     };
   }
 
+  validate = values => {
+    const errors = {};
+    if (!validator.isAlpha(values.firstname)){
+      errors.firstname = 'Invalid Input';
+    }
+    if (!values.firstname) {
+      errors.firstname = 'Required';
+    }
+    if (!validator.isAlpha(values.lastname)){
+      errors.lastname = 'Invalid Input';
+    }
+    if (!values.lastname) {
+      errors.lastname = 'Required';
+    }
+    if (!validator.isEmail(values.email)){
+      errors.email = 'Invalid Email';
+    }
+    if (!values.email) {
+      errors.email = 'Required';
+    }
+    if (!values.password) {
+      errors.password = 'Required';
+    }
+    if (!values.confirmPassword) {
+      errors.confirmPassword = 'Required';
+    }
+    return errors;
+  };
+  
   componentDidMount() {
     // If logged in and user navigates to Register page, should redirect them to dashboard
     if (this.props.auth.isAuthenticated) {
-      this.props.history.push("/dashboard");
+      this.props.history.push("/details");
     }
   }
-componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps(nextProps) {
+    if(nextProps.auth !== undefined){
+      if (nextProps.auth.isAuthenticated) {
+        this.props.history.push("/details"); // push user to dashboard when they login
+      }
+    }
     if (nextProps.errors) {
       this.setState({
         errors: nextProps.errors
       });
     }
   }
-onChange = e => {
+  onChange = e => {
     this.setState({ [e.target.id]: e.target.value });
   };
-onSubmit = e => {
+  onSubmit = e => {
     e.preventDefault();
-const newUser = {
-      firstname: this.state.firstname,
-      lastname: this.state.lastname,
-      email: this.state.email,
-      password: this.state.password,
-      confirmPassword: this.state.confirmPassword
-    };
-this.props.registerUser(newUser, this.props.history);
+    this.state.errors=this.validate(this.state);
+    if(Object.keys(this.state.errors).length>0)
+    {
+      console.log(this.state.errors)
+      this.componentWillReceiveProps(this.state)
+    }
+    else{
+      console.log("no errors")
+      const newUser = {
+        firstname: this.state.firstname,
+        lastname: this.state.lastname,
+        email: this.state.email,
+        password: this.state.password,
+        confirmPassword: this.state.confirmPassword
+      };
+      this.props.registerUser(newUser, this.props.history);
+    }
+   
   };
 render() {
     const { errors } = this.state;
@@ -133,6 +178,7 @@ return (
                 />
                 <label htmlFor="confirmPassword">Confirm Password</label>
                 <span className="red-text">{errors.confirmPassword}</span>
+                <span className="red-text">{errors.message}</span>
               </div>
               <div className="col s12" style={{ paddingLeft: "11.250px" }}>
                 <button

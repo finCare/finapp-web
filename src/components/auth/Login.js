@@ -14,36 +14,56 @@ class Login extends Component {
     };
   }
 
-componentDidMount() {
+  validate = values => {
+    const errors = {};
+    if (!values.email) {
+      errors.email = 'Required';
+    }
+    if (!values.password) {
+      errors.password = 'Required';
+    }
+    return errors;
+  };
+
+  componentDidMount() {
       // If logged in and user navigates to Login page, should redirect them to dashboard
       if (this.props.auth.isAuthenticated) {
         this.props.history.push("/dashboard");
       }
     }
-componentWillReceiveProps(nextProps) {
-    if (nextProps.auth.isAuthenticated) {
-      this.props.history.push("/details"); // push user to dashboard when they login
+  componentWillReceiveProps(nextProps) {
+    if(nextProps.auth !== undefined){
+      if (nextProps.auth.isAuthenticated) {
+        this.props.history.push("/dashboard"); // push user to dashboard when they login
+      }
     }
-if (nextProps.errors) {
+    if (nextProps.errors) {
       this.setState({
         errors: nextProps.errors
       });
     }
   }
-onChange = e => {
+  onChange = e => {
     this.setState({ [e.target.id]: e.target.value });
   };
-onSubmit = e => {
+  onSubmit = e => {
     e.preventDefault();
-const userData = {
+    this.state.errors=this.validate(this.state);
+    if(Object.keys(this.state.errors).length>0)
+    {
+      this.componentWillReceiveProps(this.state)
+    }
+    else{
+      const userData = {
       email: this.state.email,
       password: this.state.password
-    };
-this.props.loginUser(userData,this.props.history); // since we handle the redirect within our component, we don't need to pass in this.props.history as a parameter
-  };
-render() {
+      };
+      this.props.loginUser(userData,this.props.history); // since we handle the redirect within our component, we don't need to pass in this.props.history as a parameter
+   }
+};
+  render() {
     const { errors } = this.state;
-return (
+    return (
       <div className="container">
         <div style={{ marginTop: "4rem" }} className="row">
           <div className="col s8 offset-s2">
@@ -68,30 +88,29 @@ return (
                   id="email"
                   type="email"
                   className={classnames("", {
-                    invalid: errors.email || errors.emailnotfound
+                    invalid: errors.email || errors.message
                   })}
                 />
                 <label htmlFor="email">Email</label>
                 <span className="red-text">
+                  {errors.messages}
                   {errors.email}
-                  {errors.emailnotfound}
                 </span>
               </div>
               <div className="input-field col s12">
                 <input
                   onChange={this.onChange}
                   value={this.state.password}
-                  error={errors.password}
+                  error={errors.message}
                   id="password"
                   type="password"
                   className={classnames("", {
-                    invalid: errors.password || errors.passwordincorrect
+                    invalid: errors.message || errors.password
                   })}
                 />
                 <label htmlFor="password">Password</label>
                 <span className="red-text">
                   {errors.password}
-                  {errors.passwordincorrect}
                 </span>
               </div>
               <div className="col s12" style={{ paddingLeft: "11.250px" }}>

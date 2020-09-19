@@ -8,53 +8,49 @@ import {
 } from "./types";
 // Register User
 
-axios.defaults.baseURL = 'http://13.127.246.172:80/';
-export const registerUser = (userData, history) => async (dispatch) => {
-   await axios.post("service/authenticate/signup", userData).then(res => {
-     if(res.status=="200")
-     {
-       console.log("LOGIN SUCCESSFUL")
-       history.push("/details");
-
-     }
-     else{
-       console.log("NOT OK")
-     }
-   }).catch(err =>
-
+axios.defaults.baseURL = 'http://localhost:8080/';
+export const registerUser = (userData, history) => dispatch => {
+  axios
+    .post("service/authenticate/signup", userData)
+    .then(res => {
+      console.log(res.data);
+      dispatch(setCurrentUser(res.data));
+      }
+    )
+    .catch(err =>{
+      console.log(err.response.data);
       dispatch({
         type: GET_ERRORS,
         payload: err.response.data
-      })
+      })}
     );
 };
-// Login - get user token
-export const loginUser =(userData, history)  => async (dispatch) => {
-  await axios.post("service/authenticate/login", userData).then(res => {
-    //console.log(res.data.message._id);
-    if(res.status=="200")
-    {
-      console.log("LOGIN SUCCESSFUL");
-      history.push("/dashboard");
-    }
-    else{
-      console.log("NOT OK") //add when response corrected
-    }
-  }
-  )
-      //{
-//*** Save to localStorage
-//*** Set token to localStorage
-      //const { token } = res.data;
+export const loginUser = userData => dispatch => {
+  axios
+    .post("service/authenticate/login", userData)
+    .then(res => {
+      // Save to localStorage
+      // Set token to localStorage
+      const { token } = res.data;
       //localStorage.setItem("jwtToken", token);
       // Set token to Auth header
       //setAuthToken(token);
       // Decode token to get user data
       //const decoded = jwt_decode(token);
       // Set current user
-      //dispatch(setCurrentUser(decoded));
-    //})
-
+      console.log(res.data);
+      dispatch(setCurrentUser(res.data));
+    })
+    .catch(err =>{
+      console.log("Printing error here")
+      console.log(err.data);
+      console.log(err.response);
+      dispatch({
+        type: GET_ERRORS,
+        payload: err.response.data
+      })
+    }
+    );
 };
 
 export const submitDetails = (userData, history) => async (dispatch) => {
@@ -62,15 +58,8 @@ export const submitDetails = (userData, history) => async (dispatch) => {
 
   console.log(userData)
    await axios.post("service/details/submitDetails", userData).then(res => {
-     if(res.status=="200")
-     {
-       console.log(userData)
-       history.push("/dashboard");
-
-     }
-     else{
-       console.log("NOT OK")
-     }
+    console.log(res.data)
+    dispatch(setCurrentUser(res.data));
    }).catch(err =>
       dispatch({
         type: GET_ERRORS,
@@ -94,6 +83,7 @@ export const setUserLoading = () => {
 };
 // Log user out
 export const logoutUser = () => dispatch => {
+  console.log("logout")
   // Remove token from local storage
   localStorage.removeItem("jwtToken");
   // Remove auth header for future requests
